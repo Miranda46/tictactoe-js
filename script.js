@@ -11,7 +11,13 @@ const gameboard = (function() {
             const getSymbol = () => symbol;
             const getName   = () => name;
             const isEmpty   = () => symbol == '';
-            return { setSymbol, getSymbol, getName, isEmpty };
+            const reset     = () => {
+                if (getSymbol()){
+                    document.getElementsByClassName(name)[0].classList.remove(symbol);
+                    symbol = '';
+                }      
+            }
+            return { setSymbol, getSymbol, getName, isEmpty, reset };
         }
 
         const slot1 = slotter('slot_1');
@@ -60,26 +66,48 @@ const gameboard = (function() {
         slots.slot5.getSymbol() === slots.slot7.getSymbol()){
             return true;
         }
+        let isTie = true;
+
+        for (let i in slots){
+            if (slots[i].getSymbol() === ""){
+                isTie = false;
+                break;
+            }
+        }
+
+        if ( isTie ) { 
+            tie();
+        }
+
         return false;
     }
 
+    function tie () { 
+        let elem = document.getElementsByClassName('win')[0];
+        elem.showModal();
+        let winner = document.getElementById('winner');
+        winner.textContent = 'Draw';
+    }
+
     function win ( player ) { 
-        console.log(slots.slot1.getSymbol())
-        console.log(player.getName() + 'win');
+        let elem = document.getElementsByClassName('win')[0];
+        elem.showModal();
+        let winner = document.getElementById('winner');
+        winner.textContent = player.getName() + " wins!";
     }
 
     function play(player, slot) { 
         if (!slot.isEmpty()){
             return;
         }
-        console.log('plays')
-
         slot.setSymbol(player.getSymbol());
+        document.getElementsByClassName(slot.getName())[0].classList.add(player.getSymbol());
         if ( checkWinCondition(slots) ) {
             win ( player );
         }
 
         turn = (turn === 0 ? 1 : 0); 
+        document.getElementById('player_turn').innerText = getPlayer().getName();
     }
 
 
@@ -104,15 +132,22 @@ const gameflow = (function() {
     function load() { 
         let dialog = document.querySelector('dialog');
         dialog.showModal();
-
         setFn(function() {start()}, 'button');
-
         for (let i = 1; i<10; i++){
             let slotName = 'slot_' + i;
             setFnWithClassName(function(){ 
                 gameboard.play(gameboard.getPlayer(), gameboard.slots['slot' + i])
             }, slotName);
         }
+
+        setFnWithClassName(function(){reload()}, 'win')
+    }
+
+    function reload() {
+        for (let slotIndex in gameboard.slots){
+            gameboard.slots[slotIndex].reset();
+        }
+        document.getElementsByClassName('win')[0].close();
     }
 
     const players = (function() {
@@ -135,9 +170,7 @@ const gameflow = (function() {
     function setNames(){
         gameflow.players.player_1.setName(document.getElementsByClassName('jugador_1')[0].value);
         gameflow.players.player_2.setName(document.getElementsByClassName('jugador_2')[0].value);
-        console.log(gameflow.players.player_1.getName())
-
-
+        document.getElementById('player_turn').innerText = document.getElementsByClassName('jugador_1')[0].value;
     }
 
     function setFn(f, target) {
