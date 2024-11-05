@@ -60,32 +60,32 @@ const gameboard = (function() {
         slots.slot5.getSymbol() === slots.slot7.getSymbol()){
             return true;
         }
-        console.log(slots.slot1.getSymbol(),slots.slot2.getSymbol(),slots.slot3.getSymbol())
-        console.log(slots.slot1.getSymbol() === slots.slot2.getSymbol())
         return false;
     }
 
     function win ( player ) { 
-        console.log(player.getName());
+        console.log(slots.slot1.getSymbol())
+        console.log(player.getName() + 'win');
     }
 
     function play(player, slot) { 
-        console.log(slot.getSymbol())
         if (!slot.isEmpty()){
             return;
         }
+        console.log('plays')
 
         slot.setSymbol(player.getSymbol());
         if ( checkWinCondition(slots) ) {
             win ( player );
         }
 
-        turn = turn === 0 ? 1 : 0; 
+        turn = (turn === 0 ? 1 : 0); 
     }
 
-    const getTurn = () => turn;
 
-    return { play, slots, getTurn };
+    const getPlayer = () => turn === 0 ? gameflow.players.player_1 : gameflow.players.player_2;
+
+    return { play, slots, getPlayer };
 })();
 
 function player() {
@@ -99,24 +99,64 @@ function player() {
     return { getSymbol, setOSymbol, setXSymbol, setName, getName };
 }
 
-const player_1 = player();
-const player_2 = player();
+const gameflow = (function() {
+
+    function load() { 
+        let dialog = document.querySelector('dialog');
+        dialog.showModal();
+
+        setFn(function() {start()}, 'button');
+
+        for (let i = 1; i<10; i++){
+            let slotName = 'slot_' + i;
+            setFnWithClassName(function(){ 
+                gameboard.play(gameboard.getPlayer(), gameboard.slots['slot' + i])
+            }, slotName);
+        }
+    }
+
+    const players = (function() {
+
+        const player_1 = player();
+        const player_2 = player();
+        player_1.setOSymbol();
+        player_2.setXSymbol();
+
+        return { player_1, player_2 }
+
+    })();
+
+    function start (){
+        setNames();  
+        let dialog = document.querySelector('dialog');
+        dialog.close();
+    } 
+
+    function setNames(){
+        gameflow.players.player_1.setName(document.getElementsByClassName('jugador_1')[0].value);
+        gameflow.players.player_2.setName(document.getElementsByClassName('jugador_2')[0].value);
+        console.log(gameflow.players.player_1.getName())
 
 
-player_1.setName('gonzalo');
-player_2.setName('zalah');
-player_1.setOSymbol();
-player_2.setXSymbol();
-gameboard.play(player_1, gameboard.slots.slot1)
-gameboard.play(player_1, gameboard.slots.slot3)
-gameboard.play(player_1, gameboard.slots.slot2)
+    }
+
+    function setFn(f, target) {
+        let elem = document.querySelector(target);
+        elem.addEventListener('click', f);
+    }
+
+    function setFnWithClassName(f, target) {
+        let elem = document.getElementsByClassName(target)[0];
+        elem.addEventListener('click', f);
+    }
+
+    function getSlot(slotName) {
+        return document.getElementsByClassName(slotName)[0];
+    }
+
+    return { start, load, players }
+})();
 
 
 
-
-
-
-
-
-
-
+gameflow.load();

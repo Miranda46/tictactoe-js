@@ -3,8 +3,8 @@
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 2px 4px;
-    max-width: 80vh;
-    max-height: 80vh;
+    width: 80vh;
+    height: 80vh;
     grid-template-areas:
         "slot_1 slot_2 slot_3"
         "slot_4 slot_5 slot_6"
@@ -53,4 +53,9 @@
 
 .slot_9 {
     grid-area: slot_9;
+}
+
+.player_entry { 
+    display: flex;
+    flex-flow: column nowrap;
 }
